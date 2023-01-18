@@ -3,7 +3,7 @@ title: 上村 大地 (Kamimura Daichi)
 ---
 
 ```{r, echo=FALSE, out.width="30%", fig.cap=""}
-knitr::include_graphics("C:/Users/jonso/OneDrive/ドキュメント/hobby/website/images/IMG_5739.jpg")
+knitr::include_graphics("images/IMG_5739.jpg")
 ```
 
 ## 基本情報

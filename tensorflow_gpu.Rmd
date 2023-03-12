@@ -1,0 +1,42 @@
+---
+title: "RでGPU版tensorflowを使えるようにした話"
+output: html_document
+date: "2023-03-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## はじめに
+
+機械学習の勉強をしていて、一番困ったのはtensorflowがGPUを使ってくれない問題でした。
+半年以上模索して、Windows上で動かせるようにしたのでちょっと紹介。
+
+##　今回の環境
+os:Windows10
+GPU:GeForce 1080ti
+R:4.2.2
+python:3.9.13(仮想環境)
+tensorflow:2.10.1
+

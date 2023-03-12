@@ -3,3 +3,4 @@ title: 機械学習
 ---
 
 ## 準備中
+[tensorflow](https://castella3.github.io/tensorflow_gpu.html)

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2023-03-12" />
+
+<title>犬猫判別AIを作って愛犬を判別してみる(実践編)</title>
+
+<script src="site_libs/header-attrs-2.19/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="site_style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">D.kamimura study and hobby</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">ホーム</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="deepleaning.html">機械学習</a>
+</li>
+<li>
+  <a href="deepleaning.html">研究テーマ</a>
+</li>
+<li>
+  <a href="other.html">その他分析</a>
+</li>
+<li>
+  <a href="jisseki.html">記録と実績</a>
+</li>
+<li>
+  <a href="hitorigoto.html">独り言</a>
+</li>
+<li>
+  <a href="kiroku.html">研究記録</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">犬猫判別AIを作って愛犬を判別してみる(実践編)</h1>
+<h4 class="date">2023-03-12</h4>
+
+</div>
+
+
+<div id="初めに" class="section level2">
+<h2>初めに</h2>
+<p>前回、GPUを使って機械学習をしたよという記事を書きました。でも正直あのレベルならGPUがなくてもできる。じゃあ、GPUを使って何がしたい？そう、もっと大量のデータ、ユニットを使った画像識別でしょ！ということで犬と猫を見分けるAIを作ります。最後にわが愛犬、チェリーちゃんをモデルに突っ込んでちゃんと犬と判別されるか実験するぜ！</p>
+</div>
+<div id="犬猫判別用データを作る" class="section level2">
+<h2>犬猫判別用データを作る</h2>
+<p>今回は、Kaggleという機械学習の精度を競うプラットフォームで提供された「Dogs
+vs
+Cats」というデータを使います。犬と猫の画像が12500枚ずつ、計25000枚のカラー画像が含まれたデータです。でも今回は実践編。そんなたくさんのデータがある方が社会に出たら珍しい。そこで、今回は難易度を上げてこの中の2000枚ずつを使ってモデルを学習させてみようと思います。データが少ないと訓練用データを学習しすぎてモデルの精度が下がる過学習を起こしやすいです。工夫してやってみます。</p>
+<p>データをダウンロードして犬と猫それぞれの画像を訓練用1000枚、評価用500枚、テスト用500枚に分けます。</p>
+<pre class="r"><code># 中身がtrain1000、validation500、test500になってるか確認
+cat(&quot;total training cat images:&quot;,length(list.files(train_cats_dir)),&quot;\n&quot;)
+## total training cat images: 1000
+
+cat(&quot;total training dog images:&quot;,length(list.files(train_dogs_dir)),&quot;\n&quot;)
+## total training dog images: 1000
+
+cat(&quot;total validation cat images:&quot;,length(list.files(validation_cats_dir)),&quot;\n&quot;)
+## total validation cat images: 500
+
+cat(&quot;total validation dog images:&quot;,length(list.files(validation_dogs_dir)),&quot;\n&quot;)
+## total validation dog images: 500
+
+cat(&quot;total test cat images:&quot;,length(list.files(test_cats_dir)),&quot;\n&quot;)
+## total test cat images: 500
+
+cat(&quot;total test dog images:&quot;,length(list.files(test_dogs_dir)),&quot;\n&quot;)
+## total test dog images: 500</code></pre>
+<p>ちゃんと分けられています。何枚か中身を表示してみます。
+<img src="dog_and_cat_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>かわいいですね。でもかわいくない点が1つあります。画像の大きさや形が全然ちがーう!これだと画像データのままモデルを学習できないので形を合わせる必要があります。さらに、カラーを構成する青赤緑の成分をデコードして…めんどくさいですね。
+なんとkerasにはこの過程を自動的に変換してくれるimage_data_generater()関数というスーパー便利な関数があります!さっそくやってみる。</p>
+<pre class="r"><code># 色のスケーリング
+train_datagen &lt;- image_data_generator(rescale = 1/255)
+validation_datagen &lt;- image_data_generator(rescale = 1/255)
+
+# めっちゃ便利な関数で一括処理
+train_generator &lt;- flow_images_from_directory(
+  train_dir,
+  train_datagen,
+  target_size = c(150,150),
+  batch_size = 16,
+  class_mode = &quot;binary&quot;
+)
+
+validation_generator &lt;- flow_images_from_directory(
+  validation_dir,
+  validation_datagen,
+  target_size = c(150,150),
+  batch_size = 16,
+  class_mode = &quot;binary&quot;
+)
+
+batch &lt;- generator_next(train_generator)
+str(batch)</code></pre>
+<pre><code>## List of 2
+##  $ : num [1:16, 1:150, 1:150, 1:3] 0.8039 0.0706 0.0863 0.4471 0.102 ...
+##  $ : num [1:16(1d)] 1 1 0 0 1 1 1 1 1 1 ...</code></pre>
+<p>20枚ずつ、150×150にそろえて0,1のラベル付けをしています。手作業でやったら時間がかかることが関数で用意されているのは便利ですね。これでデータの準備は終わり。</p>
+</div>
+<div id="まずはシンプルにモデルを作ってみる" class="section level2">
+<h2>まずはシンプルにモデルを作ってみる</h2>
+<p>今回はCNNと呼ばれる畳み込みニューラルネットを使います。簡単に言うと2×2や3×3のランダムな行列を画像の部分部分と内積をとることで画像の特徴を捉えることができます。また、画像の一部のうち最も大きな値を代表地として画像を圧縮するマックスプーリング層やランダムに重みをリセットするドロップアウト層も入れた本格的なモデルです。</p>
+<pre class="r"><code>model &lt;- keras_model_sequential() %&gt;% 
+  layer_conv_2d(filters = 32, kernel_size = c(3,3),activation = &quot;relu&quot;,
+                input_shape = c(150,150,3)) %&gt;% 
+  layer_max_pooling_2d(pool_size = c(2,2)) %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(3,3),activation = &quot;relu&quot;) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2,2)) %&gt;% 
+  layer_conv_2d(filters = 128, kernel_size = c(3,3),activation = &quot;relu&quot;) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2,2)) %&gt;% 
+  layer_conv_2d(filters = 128, kernel_size = c(3,3),activation = &quot;relu&quot;) %&gt;%
+  layer_max_pooling_2d(pool_size = c(2,2)) %&gt;% 
+  layer_flatten() %&gt;% 
+  layer_dense(units = 512, activation = &quot;relu&quot;) %&gt;% 
+  layer_dense(units = 1, activation = &quot;sigmoid&quot;)
+
+summary(model)  </code></pre>
+<pre><code>## Model: &quot;sequential&quot;
+## ________________________________________________________________________________
+##  Layer (type)                       Output Shape                    Param #     
+## ================================================================================
+##  conv2d_3 (Conv2D)                  (None, 148, 148, 32)            896         
+##  max_pooling2d_3 (MaxPooling2D)     (None, 74, 74, 32)              0           
+##  conv2d_2 (Conv2D)                  (None, 72, 72, 64)              18496       
+##  max_pooling2d_2 (MaxPooling2D)     (None, 36, 36, 64)              0           
+##  conv2d_1 (Conv2D)                  (None, 34, 34, 128)             73856       
+##  max_pooling2d_1 (MaxPooling2D)     (None, 17, 17, 128)             0           
+##  conv2d (Conv2D)                    (None, 15, 15, 128)             147584      
+##  max_pooling2d (MaxPooling2D)       (None, 7, 7, 128)               0           
+##  flatten (Flatten)                  (None, 6272)                    0           
+##  dense_1 (Dense)                    (None, 512)                     3211776     
+##  dense (Dense)                      (None, 1)                       513         
+## ================================================================================
+## Total params: 3,453,121
+## Trainable params: 3,453,121
+## Non-trainable params: 0
+## ________________________________________________________________________________</code></pre>
+<p>パラメタの数が「3,453,121」まで増えています。mnistの時とはけた違いですな。</p>
+<p>モデルが決まったらコンパイルして学習させます。</p>
+<pre class="r"><code>model %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = optimizer_rmsprop(learning_rate = 1e-4),
+  metrics = c(&quot;acc&quot;)
+)
+
+history &lt;- model %&gt;% fit(
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 100,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+
+
+plot(history)</code></pre>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>valと表示されているのが学習時にどれぐらい過学習しているかを見るための指標になります。評価データの正確度は70%程度。今回はデータが少ないため過学習するという予想の元、過学習しにくくなるような層を追加してモデルを組みました。val_lossが後半に行くにつれて増えていくのでまだ過学習を起こしてます。</p>
+</div>
+<div id="データ拡張をして訓練済みcnnを利用する" class="section level2">
+<h2>データ拡張をして、訓練済みCNNを利用する</h2>
+<p>今回、データが少ないために十分な学習を行うのが困難でした(自分で減らしたからだろ)。そこで変換器を使ったデータ拡張をしてみます。</p>
+<p>ここでは詳しい説明は端折りますが、既存の訓練データから新たな訓練データを作ることで過学習を抑制します。</p>
+<pre class="r"><code>datagen &lt;- image_data_generator(
+  rescale = 1/255,
+  rotation_range = 40,
+  width_shift_range = 0.2,
+  height_shift_range = 0.2,
+  shear_range = 0.2,
+  zoom_range = 0.2,
+  horizontal_flip = TRUE,
+  fill_mode = &quot;nearest&quot;
+)
+
+# 実際の変換を見てみる
+
+fnames &lt;- list.files(train_cats_dir, full.names = TRUE)
+img_path &lt;- fnames[[3]]
+
+img &lt;- image_load(img_path, target_size = c(150,150))
+img_array &lt;- image_to_array(img)
+img_array &lt;- array_reshape(img_array, c(1, 150, 150, 3))
+
+augmentation_generator &lt;- flow_images_from_data(
+  img_array,
+  generator = datagen,
+  batch_size = 1
+)
+
+op &lt;- par(mfrow = c(2, 2), pty = &quot;s&quot;, mar = c(1, 0, 1, 0))
+for (i in 1:4) {
+  batch &lt;- generator_next(augmentation_generator)
+  plot(as.raster(batch[1,,,]))
+}</code></pre>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>一枚の画像を引き延ばしたり、反転させたり、回転させたり…
+一見ずるく見えますがこれだけでも過学習を抑えることができます。</p>
+<p>さらにさらに、1からCCNNを入れたモデルを作るのではなく、すでに訓練されたネットワークを使って、より高い制度の犬猫判別AIを作っていきます。</p>
+<p>今回はImageNetと呼ばれる、動物や日用生活品を訓練したCNNを用いて再度学習させます。これもずるく聞こえますが、少ない画像データで機械学習をする際によく用いられる方法です。このImageNetを用いて訓練されたモデルはkerasに含まれているのでモデルの中に記述するだけで利用することができます。素晴らしいですね。今回はVGG16モデルを使用します。</p>
+<pre class="r"><code>conv_base &lt;- application_vgg16(
+  weights = &quot;imagenet&quot;,
+  include_top = FALSE,
+  input_shape = c(150, 150, 3)
+)
+
+conv_base</code></pre>
+<pre><code>## Model: &quot;vgg16&quot;
+## ________________________________________________________________________________
+##  Layer (type)                       Output Shape                    Param #     
+## ================================================================================
+##  input_1 (InputLayer)               [(None, 150, 150, 3)]           0           
+##  block1_conv1 (Conv2D)              (None, 150, 150, 64)            1792        
+##  block1_conv2 (Conv2D)              (None, 150, 150, 64)            36928       
+##  block1_pool (MaxPooling2D)         (None, 75, 75, 64)              0           
+##  block2_conv1 (Conv2D)              (None, 75, 75, 128)             73856       
+##  block2_conv2 (Conv2D)              (None, 75, 75, 128)             147584      
+##  block2_pool (MaxPooling2D)         (None, 37, 37, 128)             0           
+##  block3_conv1 (Conv2D)              (None, 37, 37, 256)             295168      
+##  block3_conv2 (Conv2D)              (None, 37, 37, 256)             590080      
+##  block3_conv3 (Conv2D)              (None, 37, 37, 256)             590080      
+##  block3_pool (MaxPooling2D)         (None, 18, 18, 256)             0           
+##  block4_conv1 (Conv2D)              (None, 18, 18, 512)             1180160     
+##  block4_conv2 (Conv2D)              (None, 18, 18, 512)             2359808     
+##  block4_conv3 (Conv2D)              (None, 18, 18, 512)             2359808     
+##  block4_pool (MaxPooling2D)         (None, 9, 9, 512)               0           
+##  block5_conv1 (Conv2D)              (None, 9, 9, 512)               2359808     
+##  block5_conv2 (Conv2D)              (None, 9, 9, 512)               2359808     
+##  block5_conv3 (Conv2D)              (None, 9, 9, 512)               2359808     
+##  block5_pool (MaxPooling2D)         (None, 4, 4, 512)               0           
+## ================================================================================
+## Total params: 14,714,688
+## Trainable params: 14,714,688
+## Non-trainable params: 0
+## ________________________________________________________________________________</code></pre>
+<p>パラメタ数が馬鹿でかいですね。さっきのモデルにこのVGG16をくっつけていきます。今回は犬猫判別なのでVGG16の中身を壊さないよう気を付けつつ実装します。モデルはこちら</p>
+<pre class="r"><code>model &lt;- keras_model_sequential() %&gt;% 
+  conv_base() %&gt;% 
+  layer_flatten() %&gt;% 
+  layer_dense(units = 256, activation = &quot;relu&quot;) %&gt;% 
+  layer_dense(units = 1, activation = &quot;sigmoid&quot;)
+
+model</code></pre>
+<pre><code>## Model: &quot;sequential_1&quot;
+## ________________________________________________________________________________
+##  Layer (type)                       Output Shape                    Param #     
+## ================================================================================
+##  vgg16 (Functional)                 (None, 4, 4, 512)               14714688    
+##  flatten_1 (Flatten)                (None, 8192)                    0           
+##  dense_3 (Dense)                    (None, 256)                     2097408     
+##  dense_2 (Dense)                    (None, 1)                       257         
+## ================================================================================
+## Total params: 16,812,353
+## Trainable params: 16,812,353
+## Non-trainable params: 0
+## ________________________________________________________________________________</code></pre>
+<p>VGG16が最初の層になっており、平たんにして接続しています。先ほどのシンプルなモデルよりさらにパラメタ数が一桁増えました。ここまでくるとCPUでは途方もない時間がかかるか、発熱しすぎて止まってしまいます(実体験)。</p>
+<p>ここで畳み込みベースを凍結させてうんぬんがありますがとりあえずコンパイルまでスキップします。</p>
+<pre class="r"><code># モデルのコンパイル
+model %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = optimizer_rmsprop(learning_rate = 2e-5),
+  metrics = c(&quot;acc&quot;)
+)</code></pre>
+<p>コンパイルが済んだので学習させましょう。</p>
+<pre class="r"><code># 学習
+history &lt;- model %&gt;% fit(
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 30,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+
+plot(history)</code></pre>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>さっきとは異なり、評価セットの正確度が90%近くに上がっています!少ないデータでも訓練済みCNNを用いて十分な学習が行えたと考えられます。</p>
+<p>でもGPUを使っても結構時間がかかります…。</p>
+<p>テストデータを使って、正答率を見てみます。</p>
+<pre class="r"><code>model %&gt;% evaluate(test_generator, steps = 50)</code></pre>
+<pre><code>##      loss       acc 
+## 0.2646054 0.8875000</code></pre>
+<p>90%近く正解してます!これは上出来ですね。</p>
+</div>
+<div id="さらに精度を高めるためファインチューニング"
+class="section level2">
+<h2>さらに精度を高めるためファインチューニング</h2>
+<p>このモデルでもいい感じですが更なる正答率を求めてファインチューニングしました。モデルの伝播を止めていた深い層の部分を凍結解除して再度学習させます。</p>
+<pre class="r"><code>model %&gt;% compile(
+  loss = &quot;binary_crossentropy&quot;,
+  optimizer = optimizer_rmsprop(learning_rate = 1e-5),
+  metrics = c(&quot;acc&quot;)
+)
+
+
+history &lt;- model %&gt;% fit(
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 100,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+
+plot(history)</code></pre>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>正確度は前回より6ポイントアップして96%ほどでした。テストデータを入れてみます。</p>
+<pre class="r"><code>model %&gt;% evaluate(test_generator, steps = 50)</code></pre>
+<pre><code>##      loss       acc 
+## 0.2671071 0.9612500</code></pre>
+<p>なんと96%とかなり高い正答率を出しています。犬と猫を判別できているといってよさそうです。
+頑張って作ったモデルなのでとりあえず保存します。</p>
+<pre class="r"><code># モデルの保存
+model %&gt;% save_model_hdf5(&quot;cats_dogs_fine.h5&quot;)</code></pre>
+<p>保存も簡単で便利です。後から学習したモデルを利用したり、共有したりできます。</p>
+</div>
+<div id="作ったモデルに愛犬を判別させる" class="section level2">
+<h2>作ったモデルに愛犬を判別させる!!</h2>
+<p>いよいよ来ましたね。では、保存したモデルを使ってチェリーちゃんを判別させてみます(下の画像がチェリーです)。</p>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>犬だけだと本当に識別できてるかわからないので、昔に保護した子猫の画像との判別をさせてみます(下の画像が名もなき保護猫)。</p>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>犬と猫を判別できるかやってみます。</p>
+<pre class="r"><code>model %&gt;% evaluate(cherry_generator, steps = 1)</code></pre>
+<pre><code>##        loss         acc 
+## 0.004733005 1.000000000</code></pre>
+<p>正答率が1.00なので2枚の犬と猫を無事判別することができました。自分で作ったモデルがしっかり機能しているのはうれしいものがありますね。</p>
+<p>さらに、チェリー25枚、保護猫25枚で判別させてみましたが結果は80%止まりでした。顔の向きが正面でなかったり、対象が近すぎるor遠すぎる、別の物体(人や花)が画像に含まれていったなどで判別が難しい画像が含まれていたことが原因だと考えられます。対象の位置も考慮したモデルや学習をしたら改善されそうですね。</p>
+</div>
+<div id="最後に" class="section level2">
+<h2>最後に</h2>
+<p>今回は、犬猫判別AIを作って愛犬を判別してみました。</p>
+<p>GPUを使うと学習が早く進むのでストレスフリーでした。さすがに今回の後半に組んだモデルは重かったので時間はかかりましたが、CPUではそもそも負荷が大きすぎて心配になるレベルな計算だったので、GPUのありがたみを感じました。</p>
+<p>tensorflowとkerasも便利なうえに、R上ですべて完結できるのでよかったらやってみてください。</p>
+</div>
+
+<footer>
+  <p>g-mail: hp201086@senshu-u.jp</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

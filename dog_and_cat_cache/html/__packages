@@ -1,0 +1,14 @@
+keras
+ggplot2
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+magrittr
+mlbench
+tensorflow
+imager

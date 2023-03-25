@@ -4,40 +4,141 @@ output: html_document
 date: "2023-03-10"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
 ## はじめに
 
 機械学習の勉強をしていて、一番困ったのはtensorflowがGPUを使ってくれない問題でした。
-半年以上模索して、Windows上で動かせるようにしたのでちょっと紹介。
+半年以上模索して、Windows上で動かせるようにしたのでちょっと紹介。もし、環境作りしたい人がいればまた記事にします(かなり面倒だったので今回は割愛)。機械学習での"Hello world"的なmnist画像の手書き文字分類をしてみます。
 
-##　今回の環境
+
+## 今回の環境
+
 os:Windows10
+
 GPU:GeForce 1080ti
+
 R:4.2.2
+
 python:3.9.13(仮想環境)
+
 tensorflow:2.10.1
 
-a
+## パッケージ類の読み込み
+まず、データ成型のためのtidyverseや描画用のggplotを呼び出しときます。データの取得や加工、結果の描画やレポートの作成まで機械学習の流れをすべてRでできるのが便利すぎるぜ。
+それから、Rで実装されている機械学習用のパッケージもデータの加工用に便利だから読み込みます。
+```{r package}
+library(tidyverse)
+library(ggplot2)
+library(magrittr)
+library(mlbench)
+```
+それからR側からtensorflowを動かすためにtensorflowRパッケージとkerasパッケージを呼び出します。
+
+```{r tensorflow and keras}
+library(tensorflow)
+library(keras)
+```
+
+これで準備は完了。早いね。
+
+## 手書き画像分類
+```{r hiddn dataimport, echo=FALSE}
+mnist <- dataset_mnist()
+train_images <- mnist$train$x
+train_labels <- mnist$train$y
+test_images <- mnist$test$x
+test_labels <- mnist$test$y
+```
+この下の画像みたいな0から9のどれかが書かれた手書き文字をたくさん集めたデータがmnistです。これを機械になんて書いてあるか当てさせようというのが機械学習の初歩の初歩にやることみたいになっています。
+
+```{r mnist picture, echo=FALSE, fig.height=4, fig.width=4}
+digit <- train_images[8,,]
+plot(as.raster(digit,max = 255))
+
+digit <- train_images[9,,]
+plot(as.raster(digit,max = 255))
+
+
+
+```
+
+```{r clean1, echo=FALSE}
+rm(list = ls())
+
+```
+
+まずはデータの読み込みから。kerasパッケージにmnistデータが含まれているので、ダウンロードするだけです。
+
+```{r mnistdown}
+# mnistのダウンロード 
+mnist <- dataset_mnist()
+```
+
+そしたら訓練データとテストデータに振り分ける。機械学習では学習用のデータとそれがどれくらい予測できるかテストするデータに分けます。でも、このダウンロードしたデータは最初から分けられているので名前を付けるだけでいいよん。
+
+```{r mnistdatafic}
+# 振り分ける
+train_images <- mnist$train$x
+train_labels <- mnist$train$y
+test_images <- mnist$test$x
+test_labels <- mnist$test$y
+```
+
+このあとデータを学習できる形に加工するんだけど長いので割愛(これもRでできるよ!)。
+```{r kakoumnist, echo=FALSE}
+# データの準備
+train_images <- array_reshape(train_images,c(60000,28 * 28))
+train_images <- train_images/255
+
+test_images <- array_reshape(test_images,c(10000,28 * 28))
+test_images <- test_images/255
+
+train_labels <- to_categorical(train_labels)
+test_labels <- to_categorical(test_labels)
+
+
+```
+
+
+さあネットワークを作ります!わくわく!
+```{r networkmnist}
+# ネットワークのアーティテクチュア
+network <- keras_model_sequential() %>% 
+  layer_dense(units = 512, activation = "relu", input_shape = c(28*28)) %>% 
+  layer_dense(units = 10, activation = "softmax")
+```
+
+なんとたった三行!!画像データは512個のインプットを持ち出力は0～9の10個と最もシンプルな形のネットワークです。
+
+これをコンパイルして...
+```{r compilemnist}
+# コンパイル
+network %>% compile(
+  optimizer = "rmsprop",
+  loss = "categorical_crossentropy",
+  metrics = c("accuracy")
+)
+```
+
+学習開始!たった二行!
+```{r fitmnist, echo=TRUE, message=TRUE, results='asis'}
+model <- network %>% fit(train_images,train_labels,epochs = 5, batch_size = 128)
+plot(model)
+```
+
+学習の過程が見れますね!さあテストしてみましょう。
+```{r ftestmnist, echo=TRUE}
+metrics <- network %>% evaluate(test_images,test_labels)
+metrics
+
+```
+98%近い正答率を出しました!まあチュートリアルなんで「そうかー」程度かもしれないですが自分でできたときは結構感動します!
+
+しかも実装までのコードがめっちゃ少ないです!
+
+次の記事では実践的な例として犬猫判別課題をするのでそちらもご覧ください!
+
+## おまけ(詳しい環境)
+```{r sessioninfo}
+sessionInfo()
+```
+

@@ -18,6 +18,8 @@ navbar:
     #   href: css_test.html
     - text: "機械学習"
       href: deepleaning.html
+    - text: "研究テーマ"
+      href: deepleaning.html
     - text: "その他分析"
       href: other.html
     - text: "記録と実績"

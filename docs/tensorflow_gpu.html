@@ -329,6 +329,9 @@ div.tocify {
   <a href="deepleaning.html">機械学習</a>
 </li>
 <li>
+  <a href="deepleaning.html">研究テーマ</a>
+</li>
+<li>
   <a href="other.html">その他分析</a>
 </li>
 <li>
@@ -434,8 +437,8 @@ plot(model)</code></pre>
 <p>学習の過程が見れますね!さあテストしてみましょう。</p>
 <pre class="r"><code>metrics &lt;- network %&gt;% evaluate(test_images,test_labels)
 metrics</code></pre>
-<pre><code>##       loss   accuracy 
-## 0.07032286 0.97880000</code></pre>
+<pre><code>##      loss  accuracy 
+## 0.0696042 0.9784000</code></pre>
 <p>98%近い正答率を出しました!まあチュートリアルなんで「そうかー」程度かもしれないですが自分でできたときは結構感動します!</p>
 <p>しかも実装までのコードがめっちゃ少ないです!</p>
 <p>次の記事では実践的な例として犬猫判別課題をするのでそちらもご覧ください!</p>

@@ -38,7 +38,7 @@ library(tensorflow)
 library(keras)
 ```
 
-これで準備は完了。早いね。
+これで準備は完了。
 
 ## 手書き画像分類
 ```{r hiddn dataimport, echo=FALSE}
@@ -54,13 +54,15 @@ test_labels <- mnist$test$y
 digit <- train_images[8,,]
 plot(as.raster(digit,max = 255))
 
+
 digit <- train_images[9,,]
 plot(as.raster(digit,max = 255))
 
 
 
 ```
-
+![手書き文字](images/mnist picture-1.png)
+![手書き文字](images/mnist picture-2.png)
 ```{r clean1, echo=FALSE}
 rm(list = ls())
 

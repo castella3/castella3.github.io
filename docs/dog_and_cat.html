@@ -14,7 +14,7 @@
 
 <title>犬猫判別AIを作って愛犬を判別してみる(実践編)</title>
 
-<script src="site_libs/header-attrs-2.19/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
@@ -414,8 +414,8 @@ validation_generator &lt;- flow_images_from_directory(
 batch &lt;- generator_next(train_generator)
 str(batch)</code></pre>
 <pre><code>## List of 2
-##  $ : num [1:16, 1:150, 1:150, 1:3] 0.8039 0.0706 0.0863 0.4471 0.102 ...
-##  $ : num [1:16(1d)] 1 1 0 0 1 1 1 1 1 1 ...</code></pre>
+##  $ : num [1:16, 1:150, 1:150, 1:3] 0.282 0.29 0.106 0.239 0.596 ...
+##  $ : num [1:16(1d)] 1 1 0 0 1 1 0 1 0 1 ...</code></pre>
 <p>20枚ずつ、150×150にそろえて0,1のラベル付けをしています。手作業でやったら時間がかかることが関数で用意されているのは便利ですね。これでデータの準備は終わり。</p>
 </div>
 <div id="まずはシンプルにモデルを作ってみる" class="section level2">
@@ -598,7 +598,7 @@ plot(history)</code></pre>
 <p>テストデータを使って、正答率を見てみます。</p>
 <pre class="r"><code>model %&gt;% evaluate(test_generator, steps = 50)</code></pre>
 <pre><code>##      loss       acc 
-## 0.2646054 0.8875000</code></pre>
+## 0.2386079 0.9012500</code></pre>
 <p>90%近く正解してます!これは上出来ですね。</p>
 </div>
 <div id="さらに精度を高めるためファインチューニング"
@@ -625,7 +625,7 @@ plot(history)</code></pre>
 <p>正確度は前回より6ポイントアップして96%ほどでした。テストデータを入れてみます。</p>
 <pre class="r"><code>model %&gt;% evaluate(test_generator, steps = 50)</code></pre>
 <pre><code>##      loss       acc 
-## 0.2671071 0.9612500</code></pre>
+## 0.2851366 0.9675000</code></pre>
 <p>なんと96%とかなり高い正答率を出しています。犬と猫を判別できているといってよさそうです。
 頑張って作ったモデルなのでとりあえず保存します。</p>
 <pre class="r"><code># モデルの保存
@@ -639,11 +639,11 @@ model %&gt;% save_model_hdf5(&quot;cats_dogs_fine.h5&quot;)</code></pre>
 <p>犬だけだと本当に識別できてるかわからないので、昔に保護した子猫の画像との判別をさせてみます(下の画像が名もなき保護猫)。</p>
 <p><img src="dog_and_cat_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>犬と猫を判別できるかやってみます。</p>
-<pre class="r"><code>model %&gt;% evaluate(cherry_generator, steps = 1)</code></pre>
-<pre><code>##        loss         acc 
-## 0.004733005 1.000000000</code></pre>
+<pre class="r"><code>model %&gt;% evaluate(cherry_generator, steps = 2)</code></pre>
+<pre><code>##     loss      acc 
+## 7.303967 0.500000</code></pre>
 <p>正答率が1.00なので2枚の犬と猫を無事判別することができました。自分で作ったモデルがしっかり機能しているのはうれしいものがありますね。</p>
-<p>さらに、チェリー25枚、保護猫25枚で判別させてみましたが結果は80%止まりでした。顔の向きが正面でなかったり、対象が近すぎるor遠すぎる、別の物体(人や花)が画像に含まれていったなどで判別が難しい画像が含まれていたことが原因だと考えられます。対象の位置も考慮したモデルや学習をしたら改善されそうですね。</p>
+<p>さらに、チェリー25枚、保護猫25枚で判別させてみましたが結果は80%止まりでした。顔の向きが正面でなかったり、対象が近すぎるor遠すぎる、別の物体(人や花)が画像に含まれていったなどで判別が難しい画像が含まれていたことが原因だと考えられます。対象の位置も考慮したモデルや学習をしたら改善されそうです。</p>
 </div>
 <div id="最後に" class="section level2">
 <h2>最後に</h2>

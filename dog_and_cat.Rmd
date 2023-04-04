@@ -109,7 +109,7 @@ cat("total test dog images:",length(list.files(test_dogs_dir)),"\n")
 ```
 
 ちゃんと分けられています。何枚か中身を表示してみます。
-```{r echo=FALSE, ,collapse=TRUE}
+```{r eval=FALSE, ,collapse=TRUE, include=FALSE}
 # imagerのload.image関数を使用
 img1 <- load.image("C:/Users/jonso/OneDrive/ドキュメント/hobby/machinelearning/cats_and_dogs_small/train/cats/cat.989.jpg")
 img2 <- load.image("C:/Users/jonso/OneDrive/ドキュメント/hobby/machinelearning/cats_and_dogs_small/train/dogs/dog.786.jpg")
@@ -121,6 +121,11 @@ plot(img1, axes = FALSE)
 plot(img2, axes = FALSE)
 plot(img3, axes = FALSE)
 plot(img4, axes = FALSE)
+
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-2-1.png")
 
 ```
 
@@ -198,7 +203,11 @@ history <- model %>% fit(
 )
 
 
-plot(history)
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-5-1.png")
+
 ```
 
 valと表示されているのが学習時にどれぐらい過学習しているかを見るための指標になります。評価データの正確度は70%程度。今回はデータが少ないため過学習するという予想の元、過学習しにくくなるような層を追加してモデルを組みました。val_lossが後半に行くにつれて増えていくのでまだ過学習を起こしてます。
@@ -240,8 +249,12 @@ augmentation_generator <- flow_images_from_data(
 op <- par(mfrow = c(2, 2), pty = "s", mar = c(1, 0, 1, 0))
 for (i in 1:4) {
   batch <- generator_next(augmentation_generator)
-  plot(as.raster(batch[1,,,]))
 }
+
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-6-1.png")
 
 ```
 
@@ -338,7 +351,11 @@ history <- model %>% fit(
   validation_steps = 50
 )
 
-plot(history)
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-11-1.png")
+
 ```
 
 さっきとは異なり、評価セットの正確度が90%近くに上がっています!少ないデータでも訓練済みCNNを用いて十分な学習が行えたと考えられます。
@@ -389,11 +406,13 @@ history <- model %>% fit(
   validation_steps = 50
 )
 
-plot(history)
 
 ```
 
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-15-1.png")
 
+```
 
 正確度は前回より6ポイントアップして96%ほどでした。テストデータを入れてみます。
 
@@ -417,23 +436,31 @@ model %>% save_model_hdf5("cats_dogs_fine.h5")
 いよいよ来ましたね。では、保存したモデルを使ってチェリーちゃんを判別させてみます(下の画像がチェリーです)。
 
 
-```{r echo=FALSE, paged.print=FALSE}
+```{r eval=FALSE, include=FALSE, paged.print=FALSE}
 par(mfrow = c(1,1))
 cherry_img1 <- load.image("C:/Users/jonso/Documents/hobby/machinelearning/cherry/cherry_jpg/IMG_3163.JPG")
 
 plot(cherry_img1, axes=FALSE)
 ```
 
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-18-1.png")
 
+```
 
 
 犬だけだと本当に識別できてるかわからないので、昔に保護した子猫の画像との判別をさせてみます(下の画像が名もなき保護猫)。
 
-```{r echo=FALSE, paged.print=FALSE}
+```{r eval=FALSE, include=FALSE, paged.print=FALSE}
 par(mfrow = c(1,1))
 cat_img1 <- load.image("C:/Users/jonso/Documents/hobby/machinelearning/cherry/ex_cats/cat_home.jpg")
 
 plot(cat_img1,axes=FALSE)
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-19-1.png")
+
 ```
 
 犬と猫を判別できるかやってみます。

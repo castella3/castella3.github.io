@@ -386,8 +386,8 @@ cat(&quot;total test cat images:&quot;,length(list.files(test_cats_dir)),&quot;\
 
 cat(&quot;total test dog images:&quot;,length(list.files(test_dogs_dir)),&quot;\n&quot;)
 ## total test dog images: 500</code></pre>
-<p>ちゃんと分けられています。何枚か中身を表示してみます。
-<img src="dog_and_cat_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>ちゃんと分けられています。何枚か中身を表示してみます。</p>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <p>かわいいですね。でもかわいくない点が1つあります。画像の大きさや形が全然ちがーう!これだと画像データのままモデルを学習できないので形を合わせる必要があります。さらに、カラーを構成する青赤緑の成分をデコードして…めんどくさいですね。
 なんとkerasにはこの過程を自動的に変換してくれるimage_data_generater()関数というスーパー便利な関数があります!さっそくやってみる。</p>
 <pre class="r"><code># 色のスケーリング
@@ -414,8 +414,8 @@ validation_generator &lt;- flow_images_from_directory(
 batch &lt;- generator_next(train_generator)
 str(batch)</code></pre>
 <pre><code>## List of 2
-##  $ : num [1:16, 1:150, 1:150, 1:3] 0.282 0.29 0.106 0.239 0.596 ...
-##  $ : num [1:16(1d)] 1 1 0 0 1 1 0 1 0 1 ...</code></pre>
+##  $ : num [1:16, 1:150, 1:150, 1:3] 0.663 0.345 0.353 0.412 0.4 ...
+##  $ : num [1:16(1d)] 0 1 1 0 0 1 0 0 0 0 ...</code></pre>
 <p>20枚ずつ、150×150にそろえて0,1のラベル付けをしています。手作業でやったら時間がかかることが関数で用意されているのは便利ですね。これでデータの準備は終わり。</p>
 </div>
 <div id="まずはシンプルにモデルを作ってみる" class="section level2">
@@ -470,10 +470,7 @@ history &lt;- model %&gt;% fit(
   epochs = 100,
   validation_data = validation_generator,
   validation_steps = 50
-)
-
-
-plot(history)</code></pre>
+)</code></pre>
 <p><img src="dog_and_cat_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 <p>valと表示されているのが学習時にどれぐらい過学習しているかを見るための指標になります。評価データの正確度は70%程度。今回はデータが少ないため過学習するという予想の元、過学習しにくくなるような層を追加してモデルを組みました。val_lossが後半に行くにつれて増えていくのでまだ過学習を起こしてます。</p>
 </div>
@@ -510,7 +507,6 @@ augmentation_generator &lt;- flow_images_from_data(
 op &lt;- par(mfrow = c(2, 2), pty = &quot;s&quot;, mar = c(1, 0, 1, 0))
 for (i in 1:4) {
   batch &lt;- generator_next(augmentation_generator)
-  plot(as.raster(batch[1,,,]))
 }</code></pre>
 <p><img src="dog_and_cat_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>一枚の画像を引き延ばしたり、反転させたり、回転させたり…
@@ -589,16 +585,14 @@ history &lt;- model %&gt;% fit(
   epochs = 30,
   validation_data = validation_generator,
   validation_steps = 50
-)
-
-plot(history)</code></pre>
+)</code></pre>
 <p><img src="dog_and_cat_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>さっきとは異なり、評価セットの正確度が90%近くに上がっています!少ないデータでも訓練済みCNNを用いて十分な学習が行えたと考えられます。</p>
 <p>でもGPUを使っても結構時間がかかります…。</p>
 <p>テストデータを使って、正答率を見てみます。</p>
 <pre class="r"><code>model %&gt;% evaluate(test_generator, steps = 50)</code></pre>
 <pre><code>##      loss       acc 
-## 0.2386079 0.9012500</code></pre>
+## 0.2533411 0.8850000</code></pre>
 <p>90%近く正解してます!これは上出来ですね。</p>
 </div>
 <div id="さらに精度を高めるためファインチューニング"
@@ -618,14 +612,12 @@ history &lt;- model %&gt;% fit(
   epochs = 100,
   validation_data = validation_generator,
   validation_steps = 50
-)
-
-plot(history)</code></pre>
+)</code></pre>
 <p><img src="dog_and_cat_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>正確度は前回より6ポイントアップして96%ほどでした。テストデータを入れてみます。</p>
 <pre class="r"><code>model %&gt;% evaluate(test_generator, steps = 50)</code></pre>
-<pre><code>##      loss       acc 
-## 0.2851366 0.9675000</code></pre>
+<pre><code>##     loss      acc 
+## 0.231771 0.966250</code></pre>
 <p>なんと96%とかなり高い正答率を出しています。犬と猫を判別できているといってよさそうです。
 頑張って作ったモデルなのでとりあえず保存します。</p>
 <pre class="r"><code># モデルの保存
@@ -635,13 +627,13 @@ model %&gt;% save_model_hdf5(&quot;cats_dogs_fine.h5&quot;)</code></pre>
 <div id="作ったモデルに愛犬を判別させる" class="section level2">
 <h2>作ったモデルに愛犬を判別させる!!</h2>
 <p>いよいよ来ましたね。では、保存したモデルを使ってチェリーちゃんを判別させてみます(下の画像がチェリーです)。</p>
-<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="dog_and_cat_files/figure-html/unnamed-chunk-18-1.png" width="326" /></p>
 <p>犬だけだと本当に識別できてるかわからないので、昔に保護した子猫の画像との判別をさせてみます(下の画像が名もなき保護猫)。</p>
 <p><img src="dog_and_cat_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>犬と猫を判別できるかやってみます。</p>
 <pre class="r"><code>model %&gt;% evaluate(cherry_generator, steps = 2)</code></pre>
 <pre><code>##     loss      acc 
-## 7.303967 0.500000</code></pre>
+## 3.281698 0.500000</code></pre>
 <p>正答率が1.00なので2枚の犬と猫を無事判別することができました。自分で作ったモデルがしっかり機能しているのはうれしいものがありますね。</p>
 <p>さらに、チェリー25枚、保護猫25枚で判別させてみましたが結果は80%止まりでした。顔の向きが正面でなかったり、対象が近すぎるor遠すぎる、別の物体(人や花)が画像に含まれていったなどで判別が難しい画像が含まれていたことが原因だと考えられます。対象の位置も考慮したモデルや学習をしたら改善されそうです。</p>
 </div>

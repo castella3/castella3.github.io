@@ -51,12 +51,6 @@ test_labels <- mnist$test$y
 この下の画像みたいな0から9のどれかが書かれた手書き文字をたくさん集めたデータがmnistです。これを機械になんて書いてあるか当てさせようというのが機械学習の初歩の初歩にやることみたいになっています。
 
 ```{r mnist picture, echo=FALSE, fig.height=4, fig.width=4}
-digit <- train_images[8,,]
-plot(as.raster(digit,max = 255))
-
-
-digit <- train_images[9,,]
-plot(as.raster(digit,max = 255))
 
 knitr::include_graphics("images/mnist picture-1.png")
 knitr::include_graphics("images/mnist picture-2.png")
@@ -125,7 +119,6 @@ network %>% compile(
 学習開始!たった二行!
 ```{r fitmnist, echo=TRUE, message=TRUE, results='asis'}
 model <- network %>% fit(train_images,train_labels,epochs = 5, batch_size = 128)
-plot(model)
 ```
 
 ```{r echo=FALSE}

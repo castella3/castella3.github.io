@@ -2,7 +2,6 @@
 title: 機械学習
 ---
 
-
 ## 入門編
 
 ### ・[犬猫判別AIを作って愛犬を判別してみる](https://castella3.github.io/dog_and_cat.html)

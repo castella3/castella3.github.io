@@ -58,11 +58,12 @@ plot(as.raster(digit,max = 255))
 digit <- train_images[9,,]
 plot(as.raster(digit,max = 255))
 
-
+knitr::include_graphics("images/mnist picture-1.png")
+knitr::include_graphics("images/mnist picture-2.png")
 
 ```
-![手書き文字](images/mnist picture-1.png)
-![手書き文字](images/mnist picture-2.png)
+
+
 ```{r clean1, echo=FALSE}
 rm(list = ls())
 
@@ -125,6 +126,11 @@ network %>% compile(
 ```{r fitmnist, echo=TRUE, message=TRUE, results='asis'}
 model <- network %>% fit(train_images,train_labels,epochs = 5, batch_size = 128)
 plot(model)
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("images/fitmnist-1.png")
+
 ```
 
 学習の過程が見れますね!さあテストしてみましょう。

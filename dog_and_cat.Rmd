@@ -444,7 +444,7 @@ plot(cherry_img1, axes=FALSE)
 ```
 
 ```{r echo=FALSE}
-knitr::include_graphics("dog_and_cat_files/figure-html/unnamed-chunk-18-1.png")
+knitr::include_graphics("dog_and_cat_files/figure-html/cherry.png")
 
 ```
 
@@ -483,7 +483,7 @@ cherry_generator <- flow_images_from_directory(
 ```
 
 ```{r}
-model %>% evaluate(cherry_generator, steps = 2)
+model %>% evaluate(cherry_generator, steps = 1)
 ```
 
 正答率が1.00なので2枚の犬と猫を無事判別することができました。自分で作ったモデルがしっかり機能しているのはうれしいものがありますね。

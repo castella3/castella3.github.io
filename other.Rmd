@@ -2,5 +2,6 @@
 title: その他分析
 ---
 
-## 準備中
+
+### ・[データスクレイピング -千葉の天気を取ってくる-](https://castella3.github.io/data_scraping.html)
 

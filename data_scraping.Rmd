@@ -41,7 +41,7 @@ library(tidyverse)
 
 ここにある表を1年分取ってくるのが目的です。
 ```{r echo=FALSE}
-knitr::include_graphics("../images/kisyocyou.jpg")
+knitr::include_graphics("images/kisyocyou.jpg")
 
 ```
 
@@ -81,7 +81,7 @@ url_title
 
 
 ```{r echo=FALSE}
-knitr::include_graphics("../images/set_1.png")
+knitr::include_graphics("images/set_1.png")
 
 ```
 
@@ -91,7 +91,7 @@ knitr::include_graphics("../images/set_1.png")
 
 すると右側にサイトのHTMLが出てきました。カーソルを移動させるとどの部分を表しているのかわかるので、この中から持ってきたい表が青く光る部分を探します。
 ```{r echo=FALSE}
-knitr::include_graphics("../images/set_2.png")
+knitr::include_graphics("images/set_2.png")
 
 ```
 
@@ -101,7 +101,7 @@ knitr::include_graphics("../images/set_2.png")
 
 見つけたら右クリックを押して、「Copy → Copy Xpath」を押してXpathをコピーしてください。
 ```{r echo=FALSE}
-knitr::include_graphics("../images/set_3.png")
+knitr::include_graphics("images/set_3.png")
 
 ```
 

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2023-04-04" />
+
+<title>RでGPU版tensorflowを動かす方法</title>
+
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="site_style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">D.kamimura study and hobby</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">ホーム</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="deepleaning.html">機械学習</a>
+</li>
+<li>
+  <a href="other.html">その他分析</a>
+</li>
+<li>
+  <a href="jisseki.html">イベント参加等記録</a>
+</li>
+<li>
+  <a href="hitorigoto.html">独り言</a>
+</li>
+<li>
+  <a href="kiroku.html">研究記録</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">RでGPU版tensorflowを動かす方法</h1>
+<h4 class="date">2023-04-04</h4>
+
+</div>
+
+
+<div id="きっかけ" class="section level1">
+<h1>きっかけ</h1>
+<p>　先日、行動計量学会の春セミナーに参加させていただき、モデリングの勉強をしながら様々な方と交流させていただきました。その中で、私が「RでGPUを使ってtensorflowを動かしている」という話になり、やり方を教えてほしいとお声をいただいたので記事にしてみます。</p>
+</div>
+<div id="初めに" class="section level1">
+<h1>初めに</h1>
+<p>　私はRが大好きなので、できることならなんでもRでやりたがる人間です。加えて、tensorflowはPython用に作られているパッケージである点およびRでのすべての計算にGPUを使うことは不可能な点からあまりメリットはありません。それでも以下のようなメリットはあります。
+　 　</p>
+<p>・データの取得、加工から計算および可視化まで1つの言語で行える</p>
+<p>・慣れ親しんだ記法でtensorflowを動かせる</p>
+<p>特に、1つ目の利点は大きいです。Pythonでもデータ加工や分析は行えますが、統計的な処理や可視化にはRが向いていると私は考えています。なので、言語を切り替えることなく、最初から最後まですべての工程を行えることで、ヒューマンエラーの発生を少なくできるのは有用かと思います。</p>
+<p>2つ目はRを普段から使っている方向けにはなりますが、慣れ親しんだ記法やパッケージを使ってデータの加工やモデルの構築ができるので、気が楽かなと思います。</p>
+<p>あと、この記事を読んで試してPCが爆発する、データが吹っ飛ぶ等何があっても一切責任は負いませんので自己責任でお願いします。</p>
+</div>
+<div id="そもそもの発想" class="section level1">
+<h1>そもそもの発想</h1>
+<p>　Rで直接GPUに計算を任せることはできません(多分)。そこで発想としては「GPU版tensorflowを使えるPython環境を作る」+「Rからtensorflowを動かせるパッケージを使う」という形になります。</p>
+<p>GPU版tensorflowをローカルで動かせる環境を作るのがめんどくさいです。Rでtensorflowを動かすパッケージはすでにあるのでそちらを使用します。</p>
+</div>
+<div id="pythonの環境作り" class="section level1">
+<h1>Pythonの環境作り</h1>
+<p>では、実際に環境を作っていきます。</p>
+<div id="私の環境" class="section level2">
+<h2>私の環境</h2>
+<p>OS: windows10 CPU: Intel(R) Core(TM) i5-11400</p>
+<p>GPU: GeForce(R) GTX 1080Ti</p>
+<p>メモリ: 32Gb</p>
+<p>R環境</p>
+<pre class="r"><code>R.version</code></pre>
+<pre><code>##                _                                
+## platform       x86_64-w64-mingw32               
+## arch           x86_64                           
+## os             mingw32                          
+## crt            ucrt                             
+## system         x86_64, mingw32                  
+## status                                          
+## major          4                                
+## minor          2.2                              
+## year           2022                             
+## month          10                               
+## day            31                               
+## svn rev        83211                            
+## language       R                                
+## version.string R version 4.2.2 (2022-10-31 ucrt)
+## nickname       Innocent and Trusting</code></pre>
+<p>Python環境</p>
+<pre class="python"><code>#python version
+import sys
+print(sys.version)
+
+#tensorflow version</code></pre>
+<pre><code>## 3.9.13 (tags/v3.9.13:6de2ca5, May 17 2022, 16:36:42) [MSC v.1929 64 bit (AMD64)]</code></pre>
+<pre class="python"><code>import tensorflow as tf
+print(tf.__version__)
+
+#keras version</code></pre>
+<pre><code>## 2.10.1</code></pre>
+<pre class="python"><code>import keras
+print(keras.__version__)</code></pre>
+<pre><code>## 2.10.0</code></pre>
+<p>Rのバージョンは特にこだわる必要はなく、よほど古いバージョンじゃなければ大丈夫だと思います。Pythonに関してのちに記述しますが、バージョンが少しでも違うと動かなくなることがあります。</p>
+</div>
+<div id="gpuを使えるようにする環境の構築" class="section level2">
+<h2>GPUを使えるようにする環境の構築</h2>
+<p>まず、自身のGPUがtensorflow等の計算に使えるか以下のサイトで確認してください。なお、NVIDIA製のGPUでないと基本的にはできないと思います。AMD製でもできると噂では聞きましたが私はわからないです。
+<a href="https://developer.nvidia.com/cuda-gpus"
+class="uri">https://developer.nvidia.com/cuda-gpus</a></p>
+<p>自身のGPUが使用できると分かったら、必要なソフトをインストールしていきます。</p>
+<p>必要なソフトは3つ</p>
+<p>・NVIDIA Driver</p>
+<p>・CUDA</p>
+<p>・cuDNN</p>
+<p>これらはGPUの開発元であるNVIDIAからリリースされていて、GPUを計算に使うのに必要です。
+1つずつインストールします。</p>
+<div id="nvidia-driver" class="section level3">
+<h3>NVIDIA Driver</h3>
+<p>これはすでに入ってる人もいるかと思います。ない場合は下のサイトを開いて自分のGPUを選択してください。</p>
+<p><a href="https://www.nvidia.co.jp/Download/index.aspx?lang=jp"
+class="uri">https://www.nvidia.co.jp/Download/index.aspx?lang=jp</a></p>
+<p><img src="images/sagasu.png" width="563" /></p>
+<p>「探す」を押すと、ダウンロードの画面になるのでダウンロードしてください。</p>
+<p><img src="images/daun.png" width="602" /></p>
+<p>この時、バージョンと書かれている数字を後で使うのでメモを取るか覚えておいてください。</p>
+</div>
+<div id="cuda" class="section level3">
+<h3>CUDA</h3>
+<p>次にCUDAを入れていきます。CUDAはGPUを深層学習などの計算に使うために必要なツールキットです。</p>
+<p><a
+href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html"
+class="uri">https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html</a></p>
+<p>ここで、先ほどのNVIDIA
+Driverのバージョンが関係してきます。下の画像でDriverのバージョンが小さいやつが使えます。例えば、私はDriverのバージョンが531.41なので最新のCUDAが使えることになります。</p>
+<p><img src="images/CUDAver.png" width="1280" /></p>
+<p>しかし、さらに注意するべき点があります。私が確認した中ではCUDAの数字が12のやつはTensorFlowがGPUで動きませんでした(最新版はまだtensorflow
+for
+GPUに対応されてないのかも？)。なので、11.xのCUDAを入れることをお勧めします。</p>
+<p><img src="images/InkedCUDAver.jpg" width="1280" /></p>
+<p>よって、「自分のバージョンで使える」かつ「CUDA
+11.x」のCUDAをダウンロードしてください。</p>
+</div>
+<div id="cudnn" class="section level3">
+<h3>CuDNN</h3>
+<p>最後にcuDNNをインストールします。cuDNNはGPUでディープニューラルネットワークへの使用のために必要なライブラリです。</p>
+<p>まず、下のURLに飛んでDownload
+cuDNNをクリックします。この時、NVIDIAへのログインを求められるので登録するかログインしてください。</p>
+<p><a href="https://developer.nvidia.com/cudnn"
+class="uri">https://developer.nvidia.com/cudnn</a></p>
+<p>そしたら、Agreeにチェックを入れると次のような画面になるのでArchiveをクリックします。</p>
+<p><img src="images/koko.png" width="1280" /></p>
+<p>するといままでリリースされたバージョンが出てくるのでcuDNNのバージョンが8.1.xでfor
+CUDAに11.0,11.1 and 11.2のものをダウンロードしてください。</p>
+<p><img src="images/kore.jpg" width="1280" /></p>
+</div>
+</div>
+<div id="rstudioからgpuを動かせるようにする" class="section level2">
+<h2>RstudioからGPUを動かせるようにする</h2>
+<p>condaやVScodeなどで仮想環境でのpython環境を作ります。この際、pythonのバージョンは3.7から3.10の間で作ってください(私は3.9.13)。そしたら、R側でそのpythonを選択してください。Rstudioなら左上の「Tools」→「Global
+Options」→「Python」→「Select」から選べます。</p>
+<p>そしたら、Rでtensorflowを動かすためのパッケージを入れます。</p>
+<pre class="r"><code>install.packages(&quot;keras&quot;)
+install.packages(&quot;tensorflow&quot;)
+
+library(keras)
+
+install_keras(tensorflow = &quot;gpu&quot;,version = &quot;2.10.0&quot;)</code></pre>
+<p>一、二行目でkerasパッケージとTensorFlowパッケージをインストールし、三行目でkerasパッケージを呼び出す。四行目でkerasパッケージからtensorflowをGPU版のバージョン2.10.0でダウンロードします。結構時間がかかった気がします。</p>
+<pre class="r"><code>library(tensorflow)
+tf$config$list_physical_devices(&quot;GPU&quot;)</code></pre>
+<pre><code>## [[1]]
+## PhysicalDevice(name=&#39;/physical_device:GPU:0&#39;, device_type=&#39;GPU&#39;)</code></pre>
+<p>この時、出力結果にGPUが表示されればR上でtensorflowを動かすときにGPUが使われます。結構大変でしたね。これで動かない場合は、自動で追加されるはずのPATHが追加されていなかったり、Pythonのバージョンが間違っていたりといろいろな原因が考えられるので、ほかのサイトも参考にして解決してみてください。</p>
+</div>
+</div>
+
+<footer>
+  <p>g-mail: hp201086@senshu-u.jp</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

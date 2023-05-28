@@ -2,8 +2,13 @@
 title: 機械学習
 ---
 
+## 画像処理
+
 ### ・[犬猫判別AIを作って愛犬を判別してみる](https://castella3.github.io/dog_and_cat.html)
 
 ### ・[RでGPU版tensorflowを使えるようにした話](https://castella3.github.io/tensorflow_gpu.html)
+
+
+## 環境構築
 
 ### ・["RでGPU版tensorflowを動かす方法"](https://castella3.github.io/tensorflowR_for_GPU.html)

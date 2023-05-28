@@ -25,7 +25,7 @@ knitr::include_graphics("images/IMG_5739.jpg")
 - アニメ: PSYCHO-PASS
 - 犬: トイプードル
 
-##メニューの説明
+## メニューの説明
 
 機械学習: 機械学習関連の記録やアイデアをつらつら書いてます
 

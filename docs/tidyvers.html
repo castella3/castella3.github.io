@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2023-06-12" />
+
+<title>tidyverseでよく使う関数と派生技</title>
+
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="site_style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">D.kamimura study and hobby</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">ホーム</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="deepleaning.html">機械学習</a>
+</li>
+<li>
+  <a href="other.html">その他分析</a>
+</li>
+<li>
+  <a href="jisseki.html">イベント参加等記録</a>
+</li>
+<li>
+  <a href="hitorigoto.html">独り言</a>
+</li>
+<li>
+  <a href="kiroku.html">研究記録</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">tidyverseでよく使う関数と派生技</h1>
+<h4 class="date">2023-06-12</h4>
+
+</div>
+
+
+<div id="便利なパッケージtidyverse" class="section level1">
+<h1>便利なパッケージtidyverse</h1>
+<p>みなさんはtidyverseを使っていますでしょうか？私はデータを扱うときにはとりあえず読み込むくらいtidyverseが好きです。今回はtidyverseで私がよく使う関数と、それを使った派生技を紹介していきたいと思います。さっそくLet’Go!</p>
+<div id="left_join" class="section level2">
+<h2>left_join</h2>
+<p>left_joinは2つのデータセットをくっつけるときによく使います。innner_joinやraight_joinもありますが、僕はleft_joinしか使いません。キーの指定が面倒なので「左のtableには消えてはいけないデータがあって、右のtableの情報を足すだけ」と考えれば困ったことはないです。</p>
+<p>例えば、このようなディズニーランドのアトラクションデータが2つあったとします。</p>
+<pre class="r"><code>head(attraction_coo)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="70%" />
+<col width="14%" />
+<col width="15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">オムニバス</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+</tr>
+<tr class="even">
+<td align="left">ペニーアーケード</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+</tr>
+<tr class="odd">
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+</tr>
+<tr class="even">
+<td align="left">カリブの海賊</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+</tr>
+<tr class="odd">
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+</tr>
+<tr class="even">
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>head(attraction_start)</code></pre>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">start</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">オムニバス</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ペニーアーケード</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">カリブの海賊</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">1993-07-21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>attraction_cooが座標のデータ、atraction_startがアトラクションオープン日のデータです。</p>
+<p>この2つをくっつけてみます。</p>
+<pre class="r"><code>attraction_coo %&gt;% 
+  left_join(attraction_start)</code></pre>
+<pre><code>## Joining with `by = join_by(id)`</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="59%" />
+<col width="15%" />
+<col width="15%" />
+<col width="9%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">start</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">オムニバス</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ペニーアーケード</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">カリブの海賊</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+<td align="left">1993-07-21</td>
+</tr>
+<tr class="odd">
+<td
+align="left">魅惑のチキルーム：スティッチ・プレゼンツ”アロハ・エ・コモ・マイ！”</td>
+<td align="left">35.633111</td>
+<td align="left">139.8800858</td>
+<td align="left">2008-07-25</td>
+</tr>
+<tr class="even">
+<td align="left">ウエスタンランド・シューティングギャラリー</td>
+<td align="left">35.6325856</td>
+<td align="left">139.8810976</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">カントリーベア・シアター</td>
+<td align="left">35.6325856</td>
+<td align="left">139.8810976</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">蒸気船マークトウェイン号</td>
+<td align="left">35.6316173</td>
+<td align="left">139.8807639</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">トムソーヤ島いかだ</td>
+<td align="left">35.6319897</td>
+<td align="left">139.8815456</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">トムソーヤ島</td>
+<td align="left">35.6315518</td>
+<td align="left">139.8846135</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ビッグサンダー・マウンテン</td>
+<td align="left">35.6324726</td>
+<td align="left">139.8813379</td>
+<td align="left">1987-07-04</td>
+</tr>
+<tr class="even">
+<td align="left">スプラッシュ・マウンテン</td>
+<td align="left">35.6318279</td>
+<td align="left">139.8826562</td>
+<td align="left">1992-10-01</td>
+</tr>
+<tr class="odd">
+<td align="left">ビーバーブラザーズのカヌー探険</td>
+<td align="left">35.6310369</td>
+<td align="left">139.8817814</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">アリスのティーパーティー</td>
+<td align="left">35.6311482</td>
+<td align="left">139.8787883</td>
+<td align="left">1986-03-08</td>
+</tr>
+<tr class="odd">
+<td align="left">イッツ・ア・スモールワールド</td>
+<td align="left">35.6306942</td>
+<td align="left">139.8787374</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">キャッスルカルーセル</td>
+<td align="left">35.6314043</td>
+<td align="left">139.8790643</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">白雪姫と七人のこびと</td>
+<td align="left">35.6316912</td>
+<td align="left">139.8791461</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">シンデレラのフェアリーテイル・ホール</td>
+<td align="left">35.6320581</td>
+<td align="left">139.8786619</td>
+<td align="left">2011-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">空飛ぶダンボ</td>
+<td align="left">35.6314679</td>
+<td align="left">139.8795044</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ピーターパン空の旅</td>
+<td align="left">35.6317622</td>
+<td align="left">139.8796473</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ピノキオの冒険旅行</td>
+<td align="left">35.6317622</td>
+<td align="left">139.8796473</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">プーさんのハニーハント</td>
+<td align="left">35.6305544</td>
+<td align="left">139.8779199</td>
+<td align="left">2000-09-01</td>
+</tr>
+<tr class="odd">
+<td align="left">ホーンテッドマンション</td>
+<td align="left">35.6305544</td>
+<td align="left">139.8779199</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ミッキーのフィルハーマジック</td>
+<td align="left">35.6310663</td>
+<td align="left">139.8798985</td>
+<td align="left">2011-01-24</td>
+</tr>
+<tr class="odd">
+<td align="left">ガジェットのゴーコースター</td>
+<td align="left">35.6305454</td>
+<td align="left">139.8764833</td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">グーフィーのペイント＆プレイハウス</td>
+<td align="left">35.6304899</td>
+<td align="left">139.8769999</td>
+<td align="left">2012-08-24</td>
+</tr>
+<tr class="odd">
+<td align="left">チップとデールのツリーハウス</td>
+<td align="left">35.6304899</td>
+<td align="left">139.8769999</td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">トゥーンパーク</td>
+<td align="left">35.6297405</td>
+<td align="left">139.8783338</td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ドナルドのボート</td>
+<td align="left">35.630495</td>
+<td align="left">139.8767787</td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ミニーの家</td>
+<td align="left">35.6300548</td>
+<td align="left">139.8767905</td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ロジャーラビットのカートゥーンスピン</td>
+<td align="left">35.6311262</td>
+<td align="left">139.8783647</td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="even">
+<td
+align="left">スター・ツアーズ：ザ・アドベンチャーズ・コンティニュー</td>
+<td align="left">35.6301946</td>
+<td align="left">139.87659</td>
+<td align="left">2013-05-07</td>
+</tr>
+<tr class="odd">
+<td align="left">スティッチ・エンカウンター</td>
+<td align="left">35.632499</td>
+<td align="left">139.8768397</td>
+<td align="left">2015-07-17</td>
+</tr>
+<tr class="even">
+<td align="left">スペース・マウンテン</td>
+<td align="left">35.6323898</td>
+<td align="left">139.8755958</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">バズ・ライトイヤーのアストロブラスター</td>
+<td align="left">35.6323898</td>
+<td align="left">139.8755958</td>
+<td align="left">2004-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">モンスターズ・インク”ライド&amp;ゴーシーク！”</td>
+<td align="left">35.6338854</td>
+<td align="left">139.8762124</td>
+<td align="left">2009-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">美女と野獣“魔法のものがたり”</td>
+<td align="left">35.6308104</td>
+<td align="left">139.8784616</td>
+<td align="left">2020-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ベイマックスのハッピーライド</td>
+<td align="left">35.6319006757121</td>
+<td align="left">139.878872126679</td>
+<td align="left">2020-04-15</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>くっつきましたね。本来はキーと呼ばれるどれとどれがつながるかという情報を与える必要があります。ただ、2つのデータフレームに共通する変数名がある場合は勝手にキーをそれにしてくれます。複数のデータを繋げ合わせて使いたいときに便利です。</p>
+</div>
+<div id="select" class="section level2">
+<h2>select</h2>
+<p>次はselect関数です。たくさん変数があるデータから必要なデータだけを取ってくるのに使います。ここではディズニーリゾートのアトラクションやレストラン、ショーといったデータを使います。</p>
+<pre class="r"><code>head(disney_data)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="1%" />
+<col width="33%" />
+<col width="3%" />
+<col width="12%" />
+<col width="6%" />
+<col width="7%" />
+<col width="28%" />
+<col width="6%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">area</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">URL</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">オムニバス</td>
+<td align="left">TDL</td>
+<td align="left">ワールドバザール</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">ペニーアーケード</td>
+<td align="left">TDL</td>
+<td align="left">ワールドバザール</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">11</td>
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="left">カリブの海賊</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1993-07-21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>disney_data[80:100,]</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="2%" />
+<col width="31%" />
+<col width="3%" />
+<col width="14%" />
+<col width="7%" />
+<col width="8%" />
+<col width="25%" />
+<col width="7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">area</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">URL</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">88</td>
+<td align="left">ロイヤルストリート・ベランダ</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6342488</td>
+<td align="left">139.8786632</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">89</td>
+<td align="left">カウボーイ･クックハウス</td>
+<td align="left">TDL</td>
+<td align="left">ウエスタンランド</td>
+<td align="left">35.6320058</td>
+<td align="left">139.8805677</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">2019-03-15</td>
+</tr>
+<tr class="odd">
+<td align="left">90</td>
+<td align="left">キャンプ・ウッドチャック・キッチン</td>
+<td align="left">TDL</td>
+<td align="left">ウエスタンランド</td>
+<td align="left">35.6320042</td>
+<td align="left">139.8819893</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">2016-11-22</td>
+</tr>
+<tr class="even">
+<td align="left">91</td>
+<td align="left">ザ･ダイヤモンドホースシュー</td>
+<td align="left">TDL</td>
+<td align="left">ウエスタンランド</td>
+<td align="left">35.6326271</td>
+<td align="left">139.8794693</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">92</td>
+<td align="left">ハングリーベア・レストラン</td>
+<td align="left">TDL</td>
+<td align="left">ウエスタンランド</td>
+<td align="left">35.6325693</td>
+<td align="left">139.8807229</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">93</td>
+<td align="left">プラザパビリオン･レストラン</td>
+<td align="left">TDL</td>
+<td align="left">ウエスタンランド</td>
+<td align="left">35.6328647</td>
+<td align="left">139.8792524</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">94</td>
+<td align="left">ペコスビル・カフェ</td>
+<td align="left">TDL</td>
+<td align="left">ウエスタンランド</td>
+<td align="left">35.6328647</td>
+<td align="left">139.8792524</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">95</td>
+<td align="left">グランマ・サラのキッチン</td>
+<td align="left">TDL</td>
+<td align="left">クリッターカントリー</td>
+<td align="left">35.6310842</td>
+<td align="left">139.8803631</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1992-10-01</td>
+</tr>
+<tr class="odd">
+<td align="left">96</td>
+<td align="left">ラケッティのラクーンサルーン</td>
+<td align="left">TDL</td>
+<td align="left">クリッターカントリー</td>
+<td align="left">35.6305146</td>
+<td align="left">139.8813675</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1992-10-01</td>
+</tr>
+<tr class="even">
+<td align="left">97</td>
+<td align="left">キャプテンフックス・ギャレー</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.6325697</td>
+<td align="left">139.8806157</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">98</td>
+<td align="left">クイーン・オブ・ハートのバンケットホール</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.6310234</td>
+<td align="left">139.8801823</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1998-11-13</td>
+</tr>
+<tr class="even">
+<td align="left">99</td>
+<td align="left">クレオズ</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.6310043</td>
+<td align="left">139.8797922</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1996-07-20</td>
+</tr>
+<tr class="odd">
+<td align="left">100</td>
+<td align="left">トルバドールタバン</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.6320222</td>
+<td align="left">139.8811208</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">101</td>
+<td align="left">ビレッジペイストリー</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.6309255</td>
+<td align="left">139.8795965</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1997-07-31</td>
+</tr>
+<tr class="odd">
+<td align="left">102</td>
+<td align="left">マジカルマーケット</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.6325032</td>
+<td align="left">139.8798964</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">2018-04-27</td>
+</tr>
+<tr class="even">
+<td align="left">103</td>
+<td align="left">ディンギードリンク</td>
+<td align="left">TDL</td>
+<td align="left">トゥーンタウン</td>
+<td align="left">35.6315086</td>
+<td align="left">139.8756978</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1997-07-18</td>
+</tr>
+<tr class="odd">
+<td align="left">104</td>
+<td align="left">トゥーントーン・トリート</td>
+<td align="left">TDL</td>
+<td align="left">トゥーンタウン</td>
+<td align="left">35.6304132</td>
+<td align="left">139.8782642</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">2013-03-18</td>
+</tr>
+<tr class="even">
+<td align="left">105</td>
+<td align="left">ヒューイ・デューイ・ルーイのグッドタイムカフェ</td>
+<td align="left">TDL</td>
+<td align="left">トゥーンタウン</td>
+<td align="left">35.6300782</td>
+<td align="left">139.8781413</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">106</td>
+<td align="left">ミッキーのトレーラー</td>
+<td align="left">TDL</td>
+<td align="left">トゥーンタウン</td>
+<td align="left">35.6303392</td>
+<td align="left">139.8777734</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">107</td>
+<td align="left">ソフトランディング</td>
+<td align="left">TDL</td>
+<td align="left">トゥモローランド</td>
+<td align="left">35.6328594</td>
+<td align="left">139.8783802</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">108</td>
+<td align="left">トゥモローランド・テラス</td>
+<td align="left">TDL</td>
+<td align="left">トゥモローランド</td>
+<td align="left">35.6319108</td>
+<td align="left">139.8784628</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>tail(disney_data)</code></pre>
+<div class="kable-table">
+<table style="width:100%;">
+<colgroup>
+<col width="2%" />
+<col width="25%" />
+<col width="3%" />
+<col width="19%" />
+<col width="7%" />
+<col width="8%" />
+<col width="25%" />
+<col width="7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">area</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">URL</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">213</td>
+<td align="left">ビッグバンドビート</td>
+<td align="left">TDS</td>
+<td align="left">アメリカンウォーターフロント</td>
+<td align="left">35.6249106</td>
+<td align="left">139.8872273</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/ショー"
+class="uri">http://ja.dbpedia.org/resource/ショー</a></td>
+<td align="left">2006-07-14</td>
+</tr>
+<tr class="even">
+<td align="left">214</td>
+<td align="left">ブロードウェイ・ミュージックシアター</td>
+<td align="left">TDS</td>
+<td align="left">アメリカンウォーターフロント</td>
+<td align="left">35.6249106</td>
+<td align="left">139.8872273</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/ショー"
+class="uri">http://ja.dbpedia.org/resource/ショー</a></td>
+<td align="left">2006-07-14</td>
+</tr>
+<tr class="odd">
+<td align="left">215</td>
+<td align="left">マイ・フレンド・ダッフィー</td>
+<td align="left">TDS</td>
+<td align="left">アメリカンウォーターフロント</td>
+<td align="left">35.6245484</td>
+<td align="left">139.8840107</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/ショー"
+class="uri">http://ja.dbpedia.org/resource/ショー</a></td>
+<td align="left">2010-03-20</td>
+</tr>
+<tr class="even">
+<td align="left">216</td>
+<td align="left">ソング･オブ･ミラージュ</td>
+<td align="left">TDS</td>
+<td align="left">ロストリバーデルタ</td>
+<td align="left">35.625774</td>
+<td align="left">139.8814132</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/ショー"
+class="uri">http://ja.dbpedia.org/resource/ショー</a></td>
+<td align="left">2019-07-23</td>
+</tr>
+<tr class="odd">
+<td align="left">217</td>
+<td align="left">ハロー、ニューヨーク!</td>
+<td align="left">TDS</td>
+<td align="left">アメリカンウォーターフロント</td>
+<td align="left">35.6239623</td>
+<td align="left">139.8858322</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/ショー"
+class="uri">http://ja.dbpedia.org/resource/ショー</a></td>
+<td align="left">2018-07-10</td>
+</tr>
+<tr class="even">
+<td align="left">218</td>
+<td align="left">ドックサイドステージ</td>
+<td align="left">TDS</td>
+<td align="left">アメリカンウォーターフロント</td>
+<td align="left">35.6239623</td>
+<td align="left">139.8858322</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/ショー"
+class="uri">http://ja.dbpedia.org/resource/ショー</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>私が使いたいのはidとpark、ido、keido、openの5つの変数なのでこのように指定します。</p>
+<pre class="r"><code>data &lt;- disney_data %&gt;% 
+  select(id, park, ido, keido, open)
+
+head(data)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="3%" />
+<col width="56%" />
+<col width="5%" />
+<col width="11%" />
+<col width="12%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">オムニバス</td>
+<td align="left">TDL</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">ペニーアーケード</td>
+<td align="left">TDL</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">11</td>
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">TDL</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="left">カリブの海賊</td>
+<td align="left">TDL</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">TDL</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">TDL</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+<td align="left">1993-07-21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>できました。でも、5つも指定するのは面倒です。そんなときは「-」を使って次のようにも指定できます。</p>
+<pre class="r"><code>data &lt;- disney_data %&gt;% 
+  select(-area, -URL)
+
+head(data)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="3%" />
+<col width="56%" />
+<col width="5%" />
+<col width="11%" />
+<col width="12%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">オムニバス</td>
+<td align="left">TDL</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">ペニーアーケード</td>
+<td align="left">TDL</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">11</td>
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">TDL</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="left">カリブの海賊</td>
+<td align="left">TDL</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">TDL</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">TDL</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+<td align="left">1993-07-21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>同じ表ができました。さらにselectはstarts_withやends_withを使ってこんなこともできます。</p>
+<pre class="r"><code>head(
+disney_data %&gt;% 
+  select(starts_with(&quot;i&quot;))
+)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="4%" />
+<col width="79%" />
+<col width="15%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">ido</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">オムニバス</td>
+<td align="left">35.6328665</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">ペニーアーケード</td>
+<td align="left">35.6340014</td>
+</tr>
+<tr class="odd">
+<td align="left">11</td>
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">35.6337201</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="left">カリブの海賊</td>
+<td align="left">35.6342728</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">35.6338175</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">35.6333234</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>head(
+disney_data %&gt;% 
+  select(ends_with(&quot;do&quot;))
+)</code></pre>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">9</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+</tr>
+<tr class="even">
+<td align="left">10</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+</tr>
+<tr class="odd">
+<td align="left">11</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>変数名の先頭が「i」の列を取ったり、末尾が「do」の列を持ってこれます。(この例ではほぼ意味ないけど)意外と知ってると役に立つのでお勧めです。</p>
+<p>##filter</p>
+<p>filterは行方向で条件を満たす行を取ってくる関数です。とある列の要素が条件を満たすときにその列を持ってくきます。</p>
+<p>filter(変数 条件式 要素)のように書きます。</p>
+<p>この表からディズニーランドのもののみをを分けるときなどに使います。parkの要素がTDLなのが東京ディズニーランド、TDSなのが東京ディズニーシーです。ランドのものだけを取ってきます。</p>
+<pre class="r"><code>TDL &lt;- disney_data %&gt;% 
+  filter(park == &quot;TDL&quot;)
+
+tail(TDL)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="3%" />
+<col width="24%" />
+<col width="3%" />
+<col width="14%" />
+<col width="8%" />
+<col width="9%" />
+<col width="28%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">area</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">URL</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">110</td>
+<td align="left">スウィートハート・カフェ前</td>
+<td align="left">TDL</td>
+<td align="left">ワールドバザール</td>
+<td align="left">35.633569</td>
+<td align="left">139.8786776</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">111</td>
+<td align="left">トレジャーコメット横</td>
+<td align="left">TDL</td>
+<td align="left">トゥモローランド</td>
+<td align="left">35.63225</td>
+<td align="left">139.878694</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">112</td>
+<td align="left">トゥーンポップ</td>
+<td align="left">TDL</td>
+<td align="left">トゥーンタウン</td>
+<td align="left">35.6302778</td>
+<td align="left">139.8797502</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">1996-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">113</td>
+<td align="left">ポップ・ア・ロット・ポップコーン</td>
+<td align="left">TDL</td>
+<td align="left">トゥーンタウン</td>
+<td align="left">35.6303035</td>
+<td align="left">139.8788917</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">2005-11-01</td>
+</tr>
+<tr class="odd">
+<td align="left">114</td>
+<td align="left">プーさんのハニーハント前</td>
+<td align="left">TDL</td>
+<td align="left">ファンタジーランド</td>
+<td align="left">35.630944</td>
+<td align="left">139.880083</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">115</td>
+<td align="left">ポッピングポッド</td>
+<td align="left">TDL</td>
+<td align="left">トゥモローランド</td>
+<td align="left">35.6327617</td>
+<td align="left">139.8787078</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/フード"
+class="uri">http://ja.dbpedia.org/resource/フード</a></td>
+<td align="left">2004-07-15</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>これで、ランドのみを取ってこれました。filter(変数名 条件式
+要素)のように書くので、filter(park !=
+“TDS”)と書いても同様の結果になります。</p>
+<p>次は、アトラクションのみを取ってきたいと思います。しかし、アトラクションかどうかを記してある変数はありません。そこでURL変数の末尾に注目します。</p>
+<pre class="r"><code>disney_data[49:55, 6]</code></pre>
+<pre><code>## [1] &quot;http://ja.dbpedia.org/resource/花火&quot;          
+## [2] &quot;http://ja.dbpedia.org/resource/花火&quot;          
+## [3] &quot;http://ja.dbpedia.org/resource/ショー&quot;        
+## [4] &quot;http://ja.dbpedia.org/resource/ショー&quot;        
+## [5] &quot;http://ja.dbpedia.org/resource/パレード&quot;      
+## [6] &quot;http://ja.dbpedia.org/resource/グリーティング&quot;
+## [7] &quot;http://ja.dbpedia.org/resource/アトラクション&quot;</code></pre>
+<p>花火やショー、アトラクションと書いてありますね。この末尾を使って次のように書くとアトラクションのみを取ってこれます。</p>
+<pre class="r"><code>attraction &lt;- disney_data %&gt;% 
+  filter(str_detect(URL, &quot;アトラクション&quot;))
+
+head(attraction)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="34%" />
+<col width="3%" />
+<col width="13%" />
+<col width="6%" />
+<col width="7%" />
+<col width="28%" />
+<col width="6%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">area</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">URL</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">オムニバス</td>
+<td align="left">TDL</td>
+<td align="left">ワールドバザール</td>
+<td align="left">35.6328665</td>
+<td align="left">139.8799643</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">ペニーアーケード</td>
+<td align="left">TDL</td>
+<td align="left">ワールドバザール</td>
+<td align="left">35.6340014</td>
+<td align="left">139.87741</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td align="left">ウエスタンリバー鉄道</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6337201</td>
+<td align="left">139.8801419</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">カリブの海賊</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6342728</td>
+<td align="left">139.8785159</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="odd">
+<td
+align="left">ジャングルクルーズ：ワイルドライフ・エクスペディション</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6338175</td>
+<td align="left">139.880021</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1983-04-15</td>
+</tr>
+<tr class="even">
+<td align="left">スイスファミリー・ツリーハウス</td>
+<td align="left">TDL</td>
+<td align="left">アドベンチャーランド</td>
+<td align="left">35.6333234</td>
+<td align="left">139.8794404</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">1993-07-21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="r"><code>tail(attraction)</code></pre>
+<div class="kable-table">
+<table>
+<colgroup>
+<col width="2%" />
+<col width="28%" />
+<col width="3%" />
+<col width="12%" />
+<col width="7%" />
+<col width="8%" />
+<col width="30%" />
+<col width="7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="left">id</th>
+<th align="left">park</th>
+<th align="left">area</th>
+<th align="left">ido</th>
+<th align="left">keido</th>
+<th align="left">URL</th>
+<th align="left">open</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">66</td>
+<td align="left">ジャンピン･ジェリーフィッシュ</td>
+<td align="left">TDS</td>
+<td align="left">マーメイドラグーン</td>
+<td align="left">35.6265208</td>
+<td align="left">139.8823029</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+<tr class="even">
+<td align="left">67</td>
+<td align="left">ブローフィッシュ・バルーンレース</td>
+<td align="left">TDS</td>
+<td align="left">マーメイドラグーン</td>
+<td align="left">35.626473</td>
+<td align="left">139.8818256</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+<tr class="odd">
+<td align="left">68</td>
+<td align="left">マーメイドラグーンシアター</td>
+<td align="left">TDS</td>
+<td align="left">マーメイドラグーン</td>
+<td align="left">35.626695</td>
+<td align="left">139.8816848</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+<tr class="even">
+<td align="left">69</td>
+<td align="left">ワールプール</td>
+<td align="left">TDS</td>
+<td align="left">マーメイドラグーン</td>
+<td align="left">35.6266785</td>
+<td align="left">139.8820283</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+<tr class="odd">
+<td align="left">70</td>
+<td align="left">スカットルのスクーター</td>
+<td align="left">TDS</td>
+<td align="left">マーメイドラグーン</td>
+<td align="left">35.6272748</td>
+<td align="left">139.8821207</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+<tr class="even">
+<td align="left">71</td>
+<td align="left">フランダーのフライングフィッシュコースター</td>
+<td align="left">TDS</td>
+<td align="left">マーメイドラグーン</td>
+<td align="left">35.6270359</td>
+<td align="left">139.8811528</td>
+<td align="left"><a href="http://ja.dbpedia.org/resource/アトラクション"
+class="uri">http://ja.dbpedia.org/resource/アトラクション</a></td>
+<td align="left">2001-09-04</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>これでアトラクションだけ持ってこれます。</p>
+</div>
+</div>
+<div id="疲れた" class="section level1">
+<h1>疲れた</h1>
+<p>サンプルのデータが文字多めだったこともあって、文字列の操作みたいになっちゃいました。filterなんかは数値計算にも使えます(変数の要素が10以上みたいな感じ)。</p>
+<p>ほんとはmutateとかgroup_by、そのままpurrrなんかも紹介したかったけど疲れたのでいったん区切ります。気が向いたらまたやります。</p>
+</div>
+
+<footer>
+  <p>g-mail: hp201086@senshu-u.jp</p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

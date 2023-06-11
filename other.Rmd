@@ -5,3 +5,5 @@ title: その他分析
 
 ### ・[データスクレイピング -千葉の天気を取ってくる-](https://castella3.github.io/data_scraping.html)
 
+### ・[left_join・select・filter関数](https://castella3.github.io/tidyvers.html)
+

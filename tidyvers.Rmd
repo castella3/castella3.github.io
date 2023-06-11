@@ -1,0 +1,175 @@
+---
+title: "tidyverseでよく使う関数と派生技"
+output: html_document
+date: "2023-06-12"
+---
+
+# 便利なパッケージtidyverse
+
+みなさんはtidyverseを使っていますでしょうか？私はデータを扱うときにはとりあえず読み込むくらいtidyverseが好きです。今回はtidyverseで私がよく使う関数と、それを使った派生技を紹介していきたいと思います。さっそくLet'Go!
+
+
+## left_join
+left_joinは2つのデータセットをくっつけるときによく使います。innner_joinやraight_joinもありますが、僕はleft_joinしか使いません。キーの指定が面倒なので「左のtableには消えてはいけないデータがあって、右のtableの情報を足すだけ」と考えれば困ったことはないです。
+
+
+例えば、このようなディズニーランドのアトラクションデータが2つあったとします。
+
+```{r include=FALSE}
+library(tidyverse)
+library(openxlsx)
+dat <- read.xlsx("C:/Users/jonso/Documents/ゼミ関連/遺伝的アルゴリズム/Tokyo_Disney_Resort_11.xlsx")
+
+attraction_coo <- dat %>% 
+  filter(X6 == "TDL") %>% 
+  filter(str_detect(X10, "アトラクション")) %>% 
+  rename("id" = LINK) %>% 
+  select(id, X8, X9) %>% 
+  rename("ido" = X8) %>% 
+  rename("keido" = X9)
+
+#ベイマックスのみ手作業で入力(GoogleMap)
+
+
+attraction_coo[40,2:3] <-c(35.631900675712075, 139.87887212667945)
+
+
+ attraction_start<- dat %>% 
+  filter(X6 == "TDL") %>% 
+  filter(str_detect(X10, "アトラクション")) %>% 
+  rename("id" = LINK) %>% 
+  select(id, X37) %>% 
+  rename("start" = X37)
+
+
+
+```
+
+```{r}
+head(attraction_coo)
+
+head(attraction_start)
+```
+
+attraction_cooが座標のデータ、atraction_startがアトラクションオープン日のデータです。
+
+この2つをくっつけてみます。
+
+```{r}
+attraction_coo %>% 
+  left_join(attraction_start)
+```
+
+くっつきましたね。本来はキーと呼ばれるどれとどれがつながるかという情報を与える必要があります。ただ、2つのデータフレームに共通する変数名がある場合は勝手にキーをそれにしてくれます。複数のデータを繋げ合わせて使いたいときに便利です。
+
+
+## select
+
+次はselect関数です。たくさん変数があるデータから必要なデータだけを取ってくるのに使います。ここではディズニーリゾートのアトラクションやレストラン、ショーといったデータを使います。
+
+```{r include=FALSE}
+
+#ディズニーランドとシーのアトラクションやレストランに関するデータ
+
+test <- dat %>% 
+  select(LINK,X6,X7,X8,X9,X10,X37) %>% 
+  rename("id" = LINK) %>% 
+  rename("park" = X6) %>% 
+  rename("area" = X7) %>% 
+  rename("ido" = X8) %>% 
+  rename("keido" = X9) %>% 
+  rename("URL" = X10) %>% 
+  rename("open" = X37)
+
+disney_data <- test[9:218,]
+```
+
+```{r}
+head(disney_data)
+
+disney_data[80:100,]
+
+tail(disney_data)
+
+```
+
+私が使いたいのはidとpark、ido、keido、openの5つの変数なのでこのように指定します。
+
+```{r}
+data <- disney_data %>% 
+  select(id, park, ido, keido, open)
+
+head(data)
+```
+
+できました。でも、5つも指定するのは面倒です。そんなときは「-」を使って次のようにも指定できます。
+
+```{r}
+data <- disney_data %>% 
+  select(-area, -URL)
+
+head(data)
+```
+
+同じ表ができました。さらにselectはstarts_withやends_withを使ってこんなこともできます。
+
+```{r}
+head(
+disney_data %>% 
+  select(starts_with("i"))
+)
+
+head(
+disney_data %>% 
+  select(ends_with("do"))
+)
+```
+
+変数名の先頭が「i」の列を取ったり、末尾が「do」の列を持ってこれます。(この例ではほぼ意味ないけど)意外と知ってると役に立つのでお勧めです。
+
+##filter
+
+filterは行方向で条件を満たす行を取ってくる関数です。とある列の要素が条件を満たすときにその列を持ってくきます。
+
+filter(変数 条件式 要素)のように書きます。
+
+
+この表からディズニーランドのもののみをを分けるときなどに使います。parkの要素がTDLなのが東京ディズニーランド、TDSなのが東京ディズニーシーです。ランドのものだけを取ってきます。
+
+```{r}
+TDL <- disney_data %>% 
+  filter(park == "TDL")
+
+tail(TDL)
+```
+
+これで、ランドのみを取ってこれました。filter(変数名 条件式 要素)のように書くので、filter(park != "TDS")と書いても同様の結果になります。
+
+
+次は、アトラクションのみを取ってきたいと思います。しかし、アトラクションかどうかを記してある変数はありません。そこでURL変数の末尾に注目します。
+
+```{r}
+disney_data[49:55, 6]
+```
+
+花火やショー、アトラクションと書いてありますね。この末尾を使って次のように書くとアトラクションのみを取ってこれます。
+
+```{r}
+attraction <- disney_data %>% 
+  filter(str_detect(URL, "アトラクション"))
+
+head(attraction)
+tail(attraction)
+
+```
+
+
+これでアトラクションだけ持ってこれます。
+
+
+# 疲れた
+
+サンプルのデータが文字多めだったこともあって、文字列の操作みたいになっちゃいました。filterなんかは数値計算にも使えます(変数の要素が10以上みたいな感じ)。
+
+
+ほんとはmutateとかgroup_by、そのままpurrrなんかも紹介したかったけど疲れたのでいったん区切ります。気が向いたらまたやります。

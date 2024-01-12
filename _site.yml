@@ -26,8 +26,6 @@ navbar:
       href: hitorigoto.html
     - text: "研究記録"
       href: kiroku.html
-    # - text: "連絡先"
-    #   href: aaa.html
 output:
   html_document:
     theme: cosmo

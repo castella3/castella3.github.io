@@ -3,4 +3,6 @@ title: "研究記録"
 output: html_document
 ---
 
+## パッケージ開発
+
 ### ・[ggExametrika作成中](https://castella3.github.io/ggExametrika_prototype.html)

@@ -20,7 +20,7 @@ title: 分析関連
 
 ## 環境構築
 
-### ・["RでGPU版tensorflowを動かす方法"](https://castella3.github.io/tensorflowR_for_GPU.html)
+### ・[RでGPU版tensorflowを動かす方法](https://castella3.github.io/tensorflowR_for_GPU.html)
 
 
 <!-- ## ゼロから(Rで)作るDeepLeaning -->
@@ -29,4 +29,4 @@ title: 分析関連
 
 ## その他
 
-### ・["0,1の一様乱数からeが出てくる"](https://castella3.github.io/ichiyou_e.html)
+### ・[0,1の一様乱数からeが出てくる](https://castella3.github.io/ichiyou_e.html)

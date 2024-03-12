@@ -12,7 +12,6 @@ date: "2024-03-11"
 
 knitr::include_graphics("images/ichiyourannsuutrim.png")
 
-
 ```
 
 

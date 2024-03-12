@@ -8,7 +8,12 @@ date: "2024-03-11"
 
 先日、X(旧ツイッター)にてこんな定理をつぶやいている人がいました。
 
-![](images/ichiyourannsuu_trim.png)
+```{r echo=FALSE}
+
+knitr::include_graphics("images/ichiyourannsuutrim.png")
+
+
+```
 
 
 なんこれということでやってみた(拙いコードごめん)

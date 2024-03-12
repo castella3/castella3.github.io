@@ -26,3 +26,7 @@ title: 分析関連
 <!-- ## ゼロから(Rで)作るDeepLeaning -->
 
 <!-- ### ・["0章 動機とルール設定"](https://castella3.github.io/0DL_for_R_0.html) -->
+
+## その他
+
+### ・["0,1の一様乱数からeが出てくる"](https://castella3.github.io/ichiyou_e.html)

@@ -13,7 +13,7 @@ knitr::include_graphics("images/IMG_5739.jpg")
 - 興味: 機械学習、IRT、MDS、ベイズモデリング等々
 
 ## Twitterアカウント
-- [本アカ](https://twitter.com/mutate99331080)
+- [本アカ](https://twitter.com/dkamimura0)
 - [Rで運営しています](https://twitter.com/r_r79565293)
 
 
